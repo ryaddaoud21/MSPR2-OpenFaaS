@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: mspr-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: mspr_user
+      POSTGRES_PASSWORD: mspr_pass
+      POSTGRES_DB: mspr_db
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - mspr-network
+
+networks:
+  mspr-network:
+    driver: bridge

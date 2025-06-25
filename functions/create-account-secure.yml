@@ -1,0 +1,10 @@
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  create-account-secure:
+    lang: python3-flask
+    handler: ./create-user
+    image: chtaybo22/create-account-secure:latest
+

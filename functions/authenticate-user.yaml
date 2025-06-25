@@ -1,0 +1,12 @@
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  authentication:
+    lang: python3-flask
+    handler: ./authenticate_user
+    image: chtaybo22/authentication:latest
+    environment:
+      write_debug: true
+

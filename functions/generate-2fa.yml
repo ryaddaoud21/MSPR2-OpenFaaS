@@ -1,0 +1,13 @@
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  generate-2fa:
+    lang: python3-flask
+    handler: ./generate_2fa
+    image: chtaybo22/generate-2fa:latest
+    environment:
+      write_debug: true
+
+

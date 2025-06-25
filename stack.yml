@@ -1,0 +1,20 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  generate-password:
+    lang: python3-flask
+    handler: ./functions/generate_password
+    image: YOUR_DOCKERHUB_USER/generate-password:latest
+
+  generate-2fa:
+    lang: python3-flask
+    handler: ./functions/generate_2fa
+    image: YOUR_DOCKERHUB_USER/generate-2fa:latest
+
+  authenticate-user:
+    lang: python3-flask
+    handler: ./functions/authenticate_user
+    image: YOUR_DOCKERHUB_USER/authenticate-user:latest

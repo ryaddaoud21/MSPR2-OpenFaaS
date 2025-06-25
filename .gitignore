@@ -1,0 +1,33 @@
+# Python
+*.pyc
+__pycache__/
+
+# Docker
+*.tar
+*.img
+.env
+.docker/
+
+# Logs & OS
+*.log
+*.swp
+.DS_Store
+Thumbs.db
+
+# VSCode / PyCharm / JetBrains
+.vscode/
+.idea/
+
+# OpenFaaS build
+build/
+function/*.pyc
+
+# Cache / temp
+*.bak
+*.tmp
+*.sqlite
+*.db
+
+# Kubernetes
+*.yaml~
+*.yml~
