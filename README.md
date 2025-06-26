@@ -19,10 +19,56 @@ Ce projet met en œuvre plusieurs fonctions **serverless** avec [OpenFaaS](https
 - **Base de données** : PostgreSQL 15 (déployée dans Kubernetes)
 - **Plateforme** : Kubernetes avec `faas-netes`
 
----
+# 🔐 MSPR - OpenFaaS User Security Functions
 
+## 🎯 Objectif du projet
+Fournir un ensemble de fonctions serverless pour gérer des utilisateurs de manière sécurisée avec :
+- Authentification
+- 2FA (Google Authenticator)
+- Génération de mots de passe forts
+- Protection contre les doublons et injections
 
----
+## ⚙️ Technologies utilisées
+- Python 3
+- OpenFaaS
+- PostgreSQL
+- bcrypt, pyotp, qrcode
+- Docker / faas-cli
+
+## 📂 Arborescence
+functions/
+│
+├── create-user/
+│ ├── handler.py
+│ ├── requirements.txt
+│ └── create-user.yml
+├── login/
+├── generate-password/
+├── generate-2fa/
+├── verify-2fa/
+
+## 🚀 Guide de déploiement
+
+faas-cli build -f NOM_FONCTION.yml
+faas-cli push -f NOM_FONCTION.yml
+faas-cli deploy -f NOM_FONCTION.yml
+
+## 🧪 Appels CURL²
+### ✅ Créer un utilisateur
+
+curl -X POST http://127.0.0.1:8080/function/create-user -H "Content-Type: application/json" -d '{"username": "Ryad", "password": "Test123!", "mfa": ""}'
+### 🔐 Authentifier un utilisateur
+
+curl -X POST http://127.0.0.1:8080/function/login -H "Content-Type: application/json" -d '{"username": "Ryad", "password": "Test123!"}'
+### 🔑 Générer un mot de passe
+
+curl -X POST http://127.0.0.1:8080/function/generate-password -H "Content-Type: application/json" -d '{"username": "Ryad"}'
+### 📱 Générer un QR Code 2FA
+
+curl -X POST http://127.0.0.1:8080/function/generate-2fa -H "Content-Type: application/json" -d '{"username": "Ryad"}'
+### ✅ Vérifier un token 2FA
+
+curl -X POST http://127.0.0.1:8080/function/verify-2fa -H "Content-Type: application/json" -d '{"username": "Ryad", "token": "123453"}
 
 
 🧑‍💻 Auteur
