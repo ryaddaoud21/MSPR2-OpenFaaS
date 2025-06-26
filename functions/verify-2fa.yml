@@ -1,0 +1,13 @@
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+
+functions:
+  verify-2fa:
+    lang: python3-flask
+    handler: ./verify-2fa
+    image: chtaybo22/verify-2fa:latest
+    environment:
+      write_debug: true
+
+
