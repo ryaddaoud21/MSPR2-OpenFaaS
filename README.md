@@ -1,76 +1,236 @@
-# MSPR2 - OpenFaaS Serverless Project
 
-Ce projet met en œuvre plusieurs fonctions **serverless** avec [OpenFaaS](https://www.openfaas.com/) et une base de données **PostgreSQL** sur **Kubernetes**. Il simule un système sécurisé de gestion d'utilisateurs.
+# 📘 HOWTO – Déploiement d’OpenFaaS sur Google Cloud GKE Autopilot (Windows)
 
-## 🚀 Fonctionnalités
+## 🎯 Objectif :
+Déployer OpenFaaS dans un cluster Kubernetes cloud (GKE Autopilot) à l’aide de :
+- Google Cloud Platform (offre gratuite 300 $)
+- helm (gestionnaire de charts Kubernetes)
+- kubectl (client Kubernetes)
+- faas-cli (client OpenFaaS)
+- PowerShell / CMD sous Windows
 
-| Fonction                 | Description |
-|--------------------------|-------------|
-| `create-account-secure` | Création sécurisée d’un compte utilisateur |
-| `authentication`        | Authentification d’un utilisateur avec username + password |
-| `generate-2fa`          | Génération d’un secret TOTP + QR Code pour MFA |
-| `generate-password`     | Génération et mise à jour d’un mot de passe complexe |
+## 🧰 Prérequis installés :
+| Outil | Version | Installation |
+|-------|---------|--------------|
+| Google Cloud SDK | Dernière | https://cloud.google.com/sdk/docs/install |
+| Helm | 3.18+ | `choco install kubernetes-helm` ou .zip |
+| Kubectl | 1.33+ | `choco install kubernetes-cli` |
+| faas-cli | 0.17+ | Via GitHub Releases |
+| Docker (optionnel) | Dernière | Pour tests locaux avec Minikube |
+
+## 🛠️ Étapes de déploiement sur GKE Autopilot :
+### ✅ 1. Créer un cluster Kubernetes Autopilot
+```bash
+gcloud container clusters create-auto openfaas-cluster --region europe-west1
+```
+
+### ✅ 2. Se connecter au cluster
+```bash
+gcloud container clusters get-credentials openfaas-cluster --region europe-west1
+```
+
+### ✅ 3. Ajouter le repo Helm OpenFaaS
+```bash
+helm repo add openfaas https://openfaas.github.io/faas-netes/
+helm repo update
+```
+
+### ✅ 4. Créer les namespaces
+```bash
+kubectl create namespace openfaas
+kubectl create namespace openfaas-fn
+```
+
+### ✅ 5. Créer le secret admin
+```bash
+echo -n "admin" > user
+echo -n "motdepasse" > password
+
+kubectl -n openfaas create secret generic basic-auth   --from-file=basic-auth-user=user   --from-file=basic-auth-password=password
+```
+
+### ✅ 6. Installer OpenFaaS avec Helm
+```bash
+helm upgrade openfaas openfaas/openfaas `
+  --install `
+  --namespace openfaas `
+  --set functionNamespace=openfaas-fn `
+  --set generateBasicAuth=false `
+  --set basic_auth=true `
+  --set gateway.upstreamTimeout=60s
+```
+
+### ✅ 7. Exposer la Gateway via LoadBalancer
+```cmd
+kubectl patch svc gateway -n openfaas -p "{"spec": {"type": "LoadBalancer"}}"
+```
+
+### ✅ 8. Récupérer l’IP publique
+```bash
+kubectl get svc -n openfaas gateway
+```
+
+### ✅ 9. Récupérer le mot de passe admin
+```bash
+kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 -d
+```
+
+### ✅ 10. Connexion via faas-cli
+```bash
+faas-cli login --gateway http://[EXTERNAL-IP]:8080 --username admin --password [TON_MDP]
+```
 
 ---
 
-## 🧱 Architecture
+## ✅ Résultat obtenu :
+- OpenFaaS déployé avec accès public via LoadBalancer
+- Interface Web : `http://[EXTERNAL-IP]:8080`
+- faas-cli fonctionnel
 
-- **Backend Functions** : OpenFaaS Functions (Python)
-- **Base de données** : PostgreSQL 15 (déployée dans Kubernetes)
-- **Plateforme** : Kubernetes avec `faas-netes`
+## 📦 Récapitulatif Projet MSPR avec OpenFaaS et Kubernetes
 
-# 🔐 MSPR - OpenFaaS User Security Functions
-
-## 🎯 Objectif du projet
-Fournir un ensemble de fonctions serverless pour gérer des utilisateurs de manière sécurisée avec :
-- Authentification
-- 2FA (Google Authenticator)
-- Génération de mots de passe forts
-- Protection contre les doublons et injections
-
-## ⚙️ Technologies utilisées
-- Python 3
-- OpenFaaS
+### 1. Architecture & Fonctionnalités
+- OpenFaaS + Kubernetes GKE
 - PostgreSQL
-- bcrypt, pyotp, qrcode
-- Docker / faas-cli
+- Fonctions Python : `create-account-secure`, `authentication`, `generate-password`, `generate-2fa`, `verify-2fa`
 
-## 📂 Arborescence
-functions/
-│
-├── create-user/
-│ ├── handler.py
-│ ├── requirements.txt
-│ └── create-user.yml
-├── login/
-├── generate-password/
-├── generate-2fa/
-├── verify-2fa/
+### 2. Déploiement Kubernetes & OpenFaaS
+- Cluster Autopilot GKE (e2-medium)
+- OpenFaaS via Helm + LoadBalancer
+- PostgreSQL dans namespace `openfaas-fn`
+- Fonctions déployées via `faas-cli`
 
-## 🚀 Guide de déploiement
+### 3. Proxy Flask pour Frontend
+- Frontend en Flask + Bootstrap
+- Proxy vers fonctions OpenFaaS (`/f/<function>`)
 
-faas-cli build -f NOM_FONCTION.yml
-faas-cli push -f NOM_FONCTION.yml
-faas-cli deploy -f NOM_FONCTION.yml
+### 4. Frontend HTML/CSS/JS
+- Pages : signup, login, dashboard, reset-password, 2FA
+- JS centralisé dans app.js
 
-## 🧪 Appels CURL²
-### ✅ Créer un utilisateur
+### 5. Sécurité
+- bcrypt pour mot de passe
+- pyotp pour 2FA TOTP
+- Validation côté serveur
+- Communication API sécurisée
 
-curl -X POST http://127.0.0.1:8080/function/create-user -H "Content-Type: application/json" -d '{"username": "Ryad", "password": "Test123!", "mfa": ""}'
-### 🔐 Authentifier un utilisateur
+### 6. Déploiement & CI/CD
+- faas-cli pour build/push/deploy
+- Docker pour frontend Flask
+- Kubernetes YAML pour proxy
+- Automatisable avec script ou GitHub Actions
 
-curl -X POST http://127.0.0.1:8080/function/login -H "Content-Type: application/json" -d '{"username": "Ryad", "password": "Test123!"}'
-### 🔑 Générer un mot de passe
+### 7. Améliorations possibles
+- HTTPS + JWT
+- Session utilisateur
+- Déploiement frontend séparé
+- Monitoring
 
-curl -X POST http://127.0.0.1:8080/function/generate-password -H "Content-Type: application/json" -d '{"username": "Ryad"}'
-### 📱 Générer un QR Code 2FA
+### 8. PostgreSQL
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255),
+  password VARCHAR(255),
+  mfa VARCHAR(255),
+  gendate BIGINT,
+  expired BOOLEAN
+);
+```
 
-curl -X POST http://127.0.0.1:8080/function/generate-2fa -H "Content-Type: application/json" -d '{"username": "Ryad"}'
-### ✅ Vérifier un token 2FA
+---
 
-curl -X POST http://127.0.0.1:8080/function/verify-2fa -H "Content-Type: application/json" -d '{"username": "Ryad", "token": "123453"}
+## 🧾 Déploiement d’un Frontend Flask avec Proxy vers OpenFaaS
 
+### 📁 Structure du dossier
+```
+proxy-flask/
+├── app.py
+├── Dockerfile
+├── requirements.txt
+├── frontend/
+│   ├── signup.html
+│   ├── login.html
+│   └── static/
+│       ├── app.js
+│       └── style.css
+```
 
-🧑‍💻 Auteur
-Projet réalisé dans le cadre du MSPR2 à l’EPSI Toulouse
-© 2025 - Ryad D.
+### 📄 Dockerfile
+```Dockerfile
+FROM python:3.10-slim
+WORKDIR /app
+COPY . /app
+RUN pip install -r requirements.txt
+EXPOSE 5000
+CMD ["python", "app.py"]
+```
+
+### 📄 requirements.txt
+```
+Flask
+requests
+```
+
+### 📄 app.py – Proxy vers OpenFaaS
+```python
+@app.route('/f/<function_name>', methods=['POST'])
+def proxy_function_call(function_name):
+    data = request.get_json(force=True)
+    url = f"{OPENFAAS_GATEWAY_URL}/{function_name}"
+    resp = requests.post(url, json=data)
+    return jsonify(resp.json()), resp.status_code
+```
+
+### 🐳 Docker Build
+```bash
+docker build -t chtaybo22/mspr-proxy:latest .
+docker push chtaybo22/mspr-proxy:latest
+```
+
+### ☁️ Déploiement Kubernetes
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mspr-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mspr-proxy
+  template:
+    metadata:
+      labels:
+        app: mspr-proxy
+    spec:
+      containers:
+      - name: proxy
+        image: chtaybo22/mspr-proxy:latest
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mspr-proxy-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mspr-proxy
+  ports:
+  - port: 80
+    targetPort: 5000
+```
+
+### 🔧 Commandes utiles
+```bash
+kubectl apply -f deployment.yaml
+kubectl get pods
+kubectl get svc mspr-proxy-service
+```
+
+### ✅ Résultat final
+- Interface web servie via LoadBalancer GKE
+- Appels API proxifiés vers OpenFaaS
+- Système modulaire, sécurisé et scalable

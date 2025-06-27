@@ -1,11 +1,18 @@
 FROM python:3.10-slim
 
-WORKDIR /app
-COPY . /app
+WORKDIR /function
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-ENV fprocess="python3 handler.py"
-EXPOSE 8080
+COPY . .
 
+ENV fprocess="python index.py"
 CMD ["fwatchdog"]
+
+# OpenFaaS watchdog
+RUN apt-get update && apt-get install -y curl
+RUN curl -sSL https://github.com/openfaas/of-watchdog/releases/latest/download/of-watchdog > /usr/bin/fwatchdog && \
+    chmod +x /usr/bin/fwatchdog
+
+HEALTHCHECK --interval=3s CMD [ -e /tmp/.lock ] || exit 1

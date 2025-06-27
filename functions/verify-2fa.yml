@@ -1,7 +1,6 @@
 provider:
   name: openfaas
-  gateway: http://127.0.0.1:8080
-
+  gateway: http://34.38.245.109:8080
 functions:
   verify-2fa:
     lang: python3-flask

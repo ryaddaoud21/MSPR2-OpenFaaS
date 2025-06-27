@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mspr-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mspr-proxy
+  template:
+    metadata:
+      labels:
+        app: mspr-proxy
+    spec:
+      containers:
+      - name: proxy
+        image: chtaybo22/mspr-proxy:latest
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mspr-proxy-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mspr-proxy
+  ports:
+  - port: 80
+    targetPort: 5000

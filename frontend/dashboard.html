@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tableau de bord MSPR</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<style>
+  .btn-custom {
+    width: 280px;          /* largeur fixe identique */
+    height: 50px;          /* hauteur fixe identique */
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    font-size: 1.125rem;   /* taille texte btn-lg */
+  }
+  .btn-custom i {
+    font-size: 1.5rem;
+  }
+</style>
+</head>
+<body class="bg-light">
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow text-center" style="max-width: 400px; width: 100%;">
+
+      <!-- Logo -->
+      <div class="mb-4">
+        <img src="static/logo.png" alt="Logo MSPR" style="max-width: 120px;" />
+      </div>
+
+      <h3 class="mb-4">Bonjour, <span id="username"></span> !</h3>
+      <p class="mb-4">Bienvenue sur votre espace personnel MSPR.</p>
+
+      <div class="d-grid gap-3">
+        <button id="btn-change-password" class="btn btn-warning btn-lg btn-custom">
+          <i class="bi bi-key-fill"></i> Changer Password
+        </button>
+        <button id="btn-generate-2fa" class="btn btn-info btn-lg btn-custom">
+          <i class="bi bi-shield-lock-fill"></i> Générer mon code 2FA
+        </button>
+        <button id="btn-logout" class="btn btn-danger btn-lg btn-custom">
+          <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const username = sessionStorage.getItem('username');
+
+    if (!username) {
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('username').textContent = username;
+    }
+
+    document.getElementById('btn-change-password').addEventListener('click', () => {
+      window.location.href = 'generate-password.html';
+    });
+
+    document.getElementById('btn-generate-2fa').addEventListener('click', () => {
+      window.location.href = 'generate-2fa.html';
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

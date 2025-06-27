@@ -1,20 +1,41 @@
-version: 1.0
+version: "1.0"
+
 provider:
   name: openfaas
-  gateway: http://127.0.0.1:8080
+  gateway: http://34.38.245.109:8080
 
 functions:
-  generate-password:
-    lang: python3-flask
-    handler: ./functions/generate_password
-    image: YOUR_DOCKERHUB_USER/generate-password:latest
+  authentication:
+    lang: docker
+    handler: ./authenticate_user
+    image: chtaybo22/authentication:latest
+    environment:
+      write_debug: true
+
+  create-account-secure:
+    lang: docker
+    handler: ./create-user
+    image: chtaybo22/create-account-secure:latest
 
   generate-2fa:
-    lang: python3-flask
-    handler: ./functions/generate_2fa
-    image: YOUR_DOCKERHUB_USER/generate-2fa:latest
+    lang: docker
+    handler: ./generate_2fa
+    image: chtaybo22/generate-2fa:latest
+    environment:
+      write_debug: true
 
-  authenticate-user:
-    lang: python3-flask
-    handler: ./functions/authenticate_user
-    image: YOUR_DOCKERHUB_USER/authenticate-user:latest
+  generate-password:
+    lang: docker
+    handler: ./generate_password
+    image: chtaybo22/generate-password:latest
+    environment:
+      write_timeout: 30s
+      read_timeout: 30s
+      exec_timeout: 30s
+
+  verify-2fa:
+    lang: docker
+    handler: ./verify-2fa
+    image: chtaybo22/verify-2fa:latest
+    environment:
+      write_debug: true
