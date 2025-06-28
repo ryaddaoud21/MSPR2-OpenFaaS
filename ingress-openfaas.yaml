@@ -9,10 +9,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - openfaas.mspr.com
+    - openfaas.35.195.234.245.nip.io
     secretName: openfaas-cert
   rules:
-  - host: openfaas.mspr.com
+  - host: openfaas.35.195.234.245.nip.io
     http:
       paths:
       - path: /
